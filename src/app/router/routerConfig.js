@@ -13,21 +13,15 @@ const LoadingComponent = (path) => {
 
 // pages
 const Login = LoadingComponent('User/Login');
-const Test = LoadingComponent('Test');
-const Test2 = LoadingComponent('Test2');
+const Analysis = LoadingComponent('Analysis');
 
 const authorizedRoutes = [
   {
-    path: '/test',
+    path: '/dashboard/analysis',
     exact: true,
     authorities: '1',
     unauthorized: Exception403,
-    component: Test
-  },
-  {
-    path: '/parent/sub',
-    exact: true,
-    component: Test2
+    component: Analysis
   },
   {
     path: '/403',
@@ -43,7 +37,7 @@ const normalRoutes = [
   {
     path: '/',
     exact: true,
-    redirect: '/parent'
+    redirect: '/dashboard/analysis'
   },
   {
     path: '/user/login',

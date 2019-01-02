@@ -17,6 +17,7 @@ const mapStateToProps = ({ app }) => {
     collapsed: app.get('collapsed'),
     appName: app.get('appName'),
     fixedHeader: app.get('fixedHeader'),
+    logo: app.get('logo'),
     fixedSider: app.get('fixedSider')
   }
 }

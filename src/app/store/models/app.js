@@ -1,8 +1,8 @@
 import { fromJS } from 'immutable';
-import logo from '@/assets/logo.svg';
+//import logo from '@/assets/logo.svg';
 const state = fromJS({
   collapsed: false,
-  appName: 'ReactAdmin',
+  appName: '义乌港OA系统',
   logo: '',
   fixedHeader: true,
   fixedSider: true

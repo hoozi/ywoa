@@ -24,7 +24,6 @@ serviceList.forEach(service => {
 });
 
 module.exports = function(app) {
-  //app.use(proxy('/api', { target: 'http://localhost:5000/' }));
   for(let key in proxys) {
     app.use(proxy(key, proxys[key]));
   }
