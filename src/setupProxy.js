@@ -1,9 +1,10 @@
 const proxy = require('http-proxy-middleware');
 
-const proxyUrl = 'http://118.31.6.176:9999';
+const proxyUrl = 'http://www.honke.club/api';
 const localPath = '/';
 
 const serviceList = [
+  `${localPath}api`,
   `${localPath}auth`,
   `${localPath}admin`,
   `${localPath}code`,
@@ -16,9 +17,9 @@ let proxys = {};
 serviceList.forEach(service => {
   proxys[service] = {
     target: proxyUrl,
-    changeOrigin: true,
+    //changeOrigin: true,
     pathRewrite: {
-      [`^${service}`] : service
+      [`^${service}`] : ''
     }
   }
 });

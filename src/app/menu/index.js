@@ -2,8 +2,8 @@ import { formatterMenus } from '@/utils';
 
 const menuData = [
   {
-    name: 'Dashboard',
-    icon: 'dashboard',
+    name: '统计图表',
+    icon: 'pie-chart',
     path: 'dashboard',
     children: [
       {

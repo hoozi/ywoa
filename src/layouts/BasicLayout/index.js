@@ -1,14 +1,16 @@
 import React, { Component } from 'react';
 import {
-  Layout
+  Layout,
+  Icon
 } from 'antd';
 import Header from './Header';
 import SiderMenu from './SiderMenu';
 import { connect } from 'react-redux';
 import styles from './BasicLayout.less';
 import LoginChecker from '@/hoc/LoginChecker';
+import AppFooter from '@/components/AppFooter';
 
-const { Content } = Layout;
+const { Content, Footer } = Layout;
 
 const initSiderWidth = 256;
 
@@ -49,7 +51,7 @@ class BasicLayout extends Component {
   render() {
     const { collapsed, appName, logo, fixedHeader, fixedSider, location: { pathname } } = this.props;
     return (
-      <LoginChecker isLogin={true}>
+      <LoginChecker>
         <Layout style={{minHeight: '100vh'}}>
           <Header
             fixed={fixedHeader}
@@ -71,9 +73,16 @@ class BasicLayout extends Component {
               trigger={null}
               pathname={pathname}
             />
-            <Content className={styles.layoutContent}>
-              {this.props.children}
-            </Content>
+            <Layout>
+              <Content className={styles.layoutContent}>
+                {this.props.children}
+              </Content>
+              <Footer>
+                <AppFooter>
+                  Copyright <Icon type="copyright" /> 2018 蚂蚁金服体验技术部出品
+                </AppFooter>
+              </Footer>
+            </Layout>
           </Layout>
         </Layout>
       </LoginChecker>

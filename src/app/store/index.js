@@ -3,6 +3,7 @@ import { createHashHistory } from 'history';
 import  createLoadingPlugin  from '@rematch/loading';
 import { connectRouter, routerMiddleware } from 'connected-react-router';
 import app from './models/app';
+import user from './models/user';
 
 const history = createHashHistory();
 
@@ -19,17 +20,14 @@ const redux = {
 
 const store = init({
   models: {
-    app
+    app, 
+    user
   },
   redux,
   plugins: [loading]
 });
 
-const { dispatch, getState } = store
-
 export { 
-  dispatch,
-  history, 
-  getState 
+  history
 };
 export default store

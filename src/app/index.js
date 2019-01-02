@@ -8,5 +8,7 @@ const createApp = (store, history) => (
     <Router history={history} />
   </Provider>
 );
-
+export {
+  store
+}
 export default createApp(store, history);

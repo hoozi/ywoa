@@ -10,6 +10,12 @@ class LoginChecker extends Component {
       PropTypes.bool
     ])
   }
+  static defaultProps = {
+    isLogin: () => {
+      return window.localStorage.getItem('permissions') && 
+        window.localStorage.getItem('permissions').length > 0;
+    }
+  }
   checkLogin() {
     const { isLogin, history, location: { pathname } } = this.props;
     let hasLogin = isFunction(isLogin) ? isLogin() : isLogin;
