@@ -5,11 +5,13 @@ import {
   Avatar,
   Menu,
   Tooltip,
+  Spin,
   Dropdown
 } from 'antd';
 import styles from './Header.less';
 import classNames from 'classnames';
-
+import { connect } from 'react-redux';
+ 
 const { Header } = Layout;
 
 const fullScreenEvents = [
@@ -67,18 +69,17 @@ const isFullScreen = () => {
 
   return hasFullScreen;
 }
-
-export default class HeaderView extends Component {
+const mapStateToProps = ({user}) => ({
+  currentUser: user.get('currentUser')
+});
+const mapDispatchToProps = ({user}) => ({
+  logout: () => user.logout(),
+  getCurrentUser: () => user.fetchCurrentUser()
+});
+@connect(mapStateToProps, mapDispatchToProps)
+class HeaderView extends Component {
   state = {
     fullScreen: isFullScreen()
-  }
-  handleFullScreen = () => {
-    isFullScreen() ? fullScreen(true) : fullScreen();
-  }
-  handleFullScreenChange = () => {
-    this.setState({
-      fullScreen: isFullScreen()
-    });
   }
   getFullScreenEvent = type => {
     fullScreenEvents.forEach(event => {
@@ -91,23 +92,38 @@ export default class HeaderView extends Component {
   }
   componentDidMount() {
     this.getFullScreenEvent('bind');
+    this.props.getCurrentUser();
   }
   componentWillUnmount() {
     this.getFullScreenEvent('unbind');
   }
+  handleFullScreen = () => {
+    isFullScreen() ? fullScreen(true) : fullScreen();
+  }
+  handleFullScreenChange = () => {
+    this.setState({
+      fullScreen: isFullScreen()
+    });
+  }
+  handleUserMenuClick = ({key}) => {
+    if(key === 'logout') {
+      this.props.logout();
+    }
+  }
   renderRightContent = () => {
     const { fullScreen } = this.state;
+    const { currentUser } = this.props;
     const menu = (
-      <Menu className={styles.menu} selectedKeys={[]}>
+      <Menu className={styles.menu} onClick={this.handleUserMenuClick}>
         <Menu.Item disabled>
-          <Icon type="user" />个人中心
+          <Icon type='user'/>个人中心
         </Menu.Item>
         <Menu.Item disabled>
-          <Icon type="setting" />设置
+          <Icon type='setting'/>设置
         </Menu.Item>
         <Menu.Divider />
-        <Menu.Item key="logout">
-          <Icon type="logout" />退出登录
+        <Menu.Item key='logout'>
+          <Icon type='logout'/>退出登录
         </Menu.Item>
       </Menu>
     );
@@ -130,14 +146,16 @@ export default class HeaderView extends Component {
             </a>
           </Tooltip> */}
           <Dropdown overlay={menu}>
-            <span className={`${styles.action} ${styles.account}`}>
-              <Avatar 
-                size='small'
-                src='http://img.zcool.cn/community/01313a5656cd1332f87512f68f3950.jpg@1280w_1l_2o_100sh.png'
-                className={styles.avatar}
-              />
-              <span className={styles.name}>你好，admin</span>
-            </span>
+            {
+              currentUser ? <span className={`${styles.action} ${styles.account}`}>
+                <Avatar 
+                  size='small'
+                  src='http://img.zcool.cn/community/01313a5656cd1332f87512f68f3950.jpg@1280w_1l_2o_100sh.png'
+                  className={styles.avatar}
+                />
+                <span className={styles.name}>你好，{currentUser}</span>
+              </span> : <Spin size='small'/>
+            }
           </Dropdown>
         </div>
       </div>
@@ -163,3 +181,5 @@ export default class HeaderView extends Component {
     );
   }
 }
+
+export default HeaderView;

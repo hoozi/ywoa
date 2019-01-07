@@ -9,3 +9,6 @@ export async function accountLogin(params) {
     }
   });
 }
+export async function queryCurrentUser() {
+  return request('/api/user/info');
+}

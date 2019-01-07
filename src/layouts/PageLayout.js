@@ -2,13 +2,14 @@ import React from 'react';
 import styles from './PageLayout.less';
 import Breadcrumb from '@/components/Breadcrumb'
 
-export default props => {
+export default ({ children, extra, showBreadcrumb = true }) => {
   return (
     <div className='page-layout'>
       <div className={styles.pageHeader}>
-        <Breadcrumb/>
+        {showBreadcrumb && <Breadcrumb/>}
+        { extra && <div className={styles.extra}>{extra}</div>}
       </div>
-      <div className={styles.pageContent}>{props.children}</div>
+      <div className={styles.pageContent}>{children}</div>
     </div>
   )
 }

@@ -5,11 +5,11 @@ const localPath = '/';
 
 const serviceList = [
   `${localPath}api`,
-  `${localPath}auth`,
+  /* `${localPath}auth`,
   `${localPath}admin`,
   `${localPath}code`,
   `${localPath}gen`,
-  `${localPath}daemon`
+  `${localPath}daemon` */
 ]
 
 let proxys = {};
@@ -17,7 +17,7 @@ let proxys = {};
 serviceList.forEach(service => {
   proxys[service] = {
     target: proxyUrl,
-    //changeOrigin: true,
+    changeOrigin: true,
     pathRewrite: {
       [`^${service}`] : ''
     }

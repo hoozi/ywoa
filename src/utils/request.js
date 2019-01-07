@@ -1,8 +1,8 @@
 import axios from 'axios';
 //import { getToken } from './token';
 import { notification } from 'antd';
-
-
+import store from '@/app/store';
+import { push } from 'connected-react-router';
 const codeMessage = {
   200: '服务器成功返回请求的数据。',
   201: '新建或修改数据成功。',
@@ -71,12 +71,21 @@ export default function request(url, options) {
     return response;
   })
   .catch(e => {
-    if (e.status === 401) {
-      //store.dispatch('user/logout');
+    const { status } = e;
+    if (status === 401 || status === 403) {
+      store.dispatch(push('/user/login'));
       return;
-    } else if(e.status === 500 ) {
-      //router.push('/500');
+    }
+    if (status === 403) {
+      store.dispatch(push('/403'));
       return;
+    }
+    if (status <= 504 && status >= 500) {
+      store.dispatch(push('/500'));
+      return;
+    }
+    if (status >= 404 && status < 422) {
+      store.dispatch(push('/404'));
     }
   });
 }

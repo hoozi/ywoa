@@ -2,12 +2,12 @@ import { formatterMenus } from '@/utils';
 
 const menuData = [
   {
-    name: '统计图表',
+    name: '图表统计',
     icon: 'pie-chart',
     path: 'dashboard',
     children: [
       {
-        name: '统计',
+        name: '统计页',
         path: 'analysis',
       }
     ],

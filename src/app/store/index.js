@@ -2,8 +2,10 @@ import { init } from '@rematch/core';
 import { createHashHistory } from 'history';
 import  createLoadingPlugin  from '@rematch/loading';
 import { connectRouter, routerMiddleware } from 'connected-react-router';
+import base from './models/base';
 import app from './models/app';
 import user from './models/user';
+import analysis from './models/analysis';
 
 const history = createHashHistory();
 
@@ -20,8 +22,10 @@ const redux = {
 
 const store = init({
   models: {
+    base,
     app, 
-    user
+    user,
+    analysis
   },
   redux,
   plugins: [loading]

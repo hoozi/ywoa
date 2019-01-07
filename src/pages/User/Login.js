@@ -18,7 +18,7 @@ const loginStatusMap = {
 
 const mapStateToProps = ( { loading, user } ) => ({ 
   submitting:  loading.effects.user.login,
-  loginStatus: user.loginStatus
+  loginStatus: user.get('loginStatus')
 });
 const mapDispatchToProps = ({ user }) => ({
   login: params => user.login(params)

@@ -1,14 +1,15 @@
 import React, { Component } from 'react';
 import {
   Layout,
-  Icon
+  //Icon
 } from 'antd';
+import Debounce from 'lodash-decorators/debounce';
 import Header from './Header';
 import SiderMenu from './SiderMenu';
 import { connect } from 'react-redux';
 import styles from './BasicLayout.less';
 import LoginChecker from '@/hoc/LoginChecker';
-import AppFooter from '@/components/AppFooter';
+//import AppFooter from '@/components/AppFooter';
 
 const { Content, Footer } = Layout;
 
@@ -32,22 +33,28 @@ const mapDispatchToProps = ({ app: { toggleCollapsed } }) => {
 
 @connect(mapStateToProps, mapDispatchToProps)
 class BasicLayout extends Component {
+  collapsed = true;
+  componentWillMount() {
+    this.triggerResizeEvent.cancel();
+  }
   getLayoutStyles = (collapsed, fixed) => {
     return {
       paddingTop: this.props.fixedHeader ? 64 : 0,
       paddingLeft: collapsed ? 64 : 256 
     }
   }
-
-  collapsed = true;
-
-  
-
   handleSiderToggle = () => {
     this.props.onSiderCollapsed(this.collapsed);
     this.collapsed = !this.collapsed;
+    this.triggerResizeEvent();
   }
-  
+  /* eslint-disable*/
+  @Debounce(300)
+  triggerResizeEvent() {
+    const event = document.createEvent('HTMLEvents');
+    event.initEvent('resize', true, false);
+    window.dispatchEvent(event);
+  }
   render() {
     const { collapsed, appName, logo, fixedHeader, fixedSider, location: { pathname } } = this.props;
     return (
@@ -77,11 +84,7 @@ class BasicLayout extends Component {
               <Content className={styles.layoutContent}>
                 {this.props.children}
               </Content>
-              <Footer>
-                <AppFooter>
-                  Copyright <Icon type="copyright" /> 2018 蚂蚁金服体验技术部出品
-                </AppFooter>
-              </Footer>
+              <Footer></Footer>
             </Layout>
           </Layout>
         </Layout>
