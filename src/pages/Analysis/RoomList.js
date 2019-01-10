@@ -27,7 +27,6 @@ const getColor = item => {
   } else {
     return colorMap[2]['theme'];
   }
-  return '';
 }
 function noop() {}
 export default ({ data, onGetCurrentRoom = noop }) => {
@@ -47,10 +46,10 @@ export default ({ data, onGetCurrentRoom = noop }) => {
       <Row gutter={4}>
         {
           data.map((item, index) => (
-            <Col xxl={4} lg={4} xl={4} md={6} sm={6} xs={6} key={item}>
-              <div className={styles.roomItem} onClick={() => onGetCurrentRoom(index)}>
+            <Col span={6} key={item.id}>
+              <div className={styles.roomItem} onClick={() => onGetCurrentRoom(!item.isRented ? -1 : index)} style={{backgroundColor: getColor(item)}}>
                 <Icon type='home' theme='filled' style={{fontSize: 13}}/>
-                <span className={styles.roomName}>A403-A4041(96m²)</span> 
+                <span className={styles.roomName}><b>{item.roomName}</b> {item.size}m²</span> 
               </div>
             </Col>
           ))

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import {
-  Cascader
+  Cascader, Spin
 } from 'antd';
 import { connect } from 'react-redux';
 import omit from 'lodash/omit';
@@ -34,31 +34,48 @@ const mapDispatchToProps = ({ base }) => (
 @connect(mapStateToProps, mapDispatchToProps)
 class FloorCascader extends Component {
   state = {
-    options
+    options,
+    defaultValue: []
+  }
+  getOptionChildren = data => {
+    return data.map(item => ({
+      value: item.id,
+      label: `${item.name}层`
+    }));
+  }
+  componentDidMount() {
+    const { options } = this.state
+    const { getInitValue } = this.props
+    this.props.getFloorsByArea(options[0].value, floors => {
+      options[0].children = this.getOptionChildren(floors);
+      getInitValue && getInitValue([options[0].value, options[0].children[0].value]);
+      this.forceUpdate();
+    });
   }
   handleLoadData = selectedOptions => {
     const targetSelectedOptions = selectedOptions[0];
     targetSelectedOptions.loading = true;
     this.props.getFloorsByArea(targetSelectedOptions.value, floors => {
       targetSelectedOptions.loading = false;
-      targetSelectedOptions.children = floors.map(item => ({
-        value: item.id,
-        label: `${item.name}层`
-      }));
+      targetSelectedOptions.children = this.getOptionChildren(floors);
       this.forceUpdate();
     });
   }
   render() {
     const { options } = this.state;
-    const { ...restProps } = this.props
+    const { floors } = this.props;
     return (
+      floors.length ? 
       <Cascader
+        defaultValue={[options[0].value, floors[0].id]}
         className={styles.floorCascader}
         options={options}
         loadData={this.handleLoadData}
+        allowClear={false}
         size='small'
-        {...omitProps(restProps, ['getFloorsByArea'])}
-      />
+        {...omitProps(this.props, ['getFloorsByArea','floors','getInitValue'])}
+      /> : 
+      <Spin/>
     )
   }
 }

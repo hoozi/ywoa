@@ -23,7 +23,7 @@ export default ({data, height}) => {
     }
   };
   return (
-    <Chart height={height} data={dv} scale={cols} forceFit>
+    <Chart height={height} data={dv} scale={cols} forceFit padding='auto'>
       <Legend />
       <Axis name='month' />
       <Axis
@@ -42,7 +42,6 @@ export default ({data, height}) => {
         position='month*energyCount'
         size={2}
         color={'energyName'}
-        shape={'smooth'}
       />
       <Geom
         type='point'

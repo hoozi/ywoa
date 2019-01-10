@@ -2,7 +2,7 @@
 
 .pageHeader {
   background: #fff;
-  padding: 16px 24px;
+  padding: 16px 16px 0;
   //border-bottom: 1px solid @grey-4;
   /* position: fixed;
   top: 64px;
@@ -10,14 +10,26 @@
   left: 256px;
   z-index: 10; */
   box-shadow: 0 1px 4px rgba(0,21,41,.08);
+}
+.pageHeaderFixed {
+  position: fixed;
+  top: 64px;
+  width: calc(100% - 256px);
+  left: 256px;
+  z-index: 10;
+}
+.pageHeaderTop {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  padding-bottom: 16px;
 }
-
 .pageContent {
   padding: 16px;
   //margin-top: 53px;
 }
 .extra {
   
+}
+.content {
 }

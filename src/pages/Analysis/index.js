@@ -1,14 +1,20 @@
 import React, { Component } from 'react';
-import { Row, Col, Spin, Icon, Menu, Dropdown, Card, Radio } from 'antd'
+import { Row, Col, Spin, Icon, Menu, /* Dropdown, */ Card, Radio, Drawer } from 'antd'
 import { Charts } from 'ant-design-pro';
 import moment from 'moment';
 import PageLayout from '@/layouts/PageLayout';
 import styles from './index.less';
 import { connect } from 'react-redux';
+import TweenOne from 'rc-tween-one';
+import Children from 'rc-tween-one/lib/plugin/ChildrenPlugin';
 import { WaterIcon, PowerIcon, ContractIcon } from '@/components/EnergyIcon';
+import { mapLoadingAndEffect } from '@/utils'
 import FloorCascader from '@/components/FloorCascader';
 import RoomList from './RoomList';
 import EnergyAnalysis from './EnergyAnalysis';
+import toPairs from 'lodash/toPairs';
+
+TweenOne.plugins.push(Children);
 
 const years = [
   moment().format('YYYY'), 
@@ -26,6 +32,10 @@ const topColResponsiveProps = {
   xl: 8,
   style: { marginBottom: 16 },
 };
+const fieldStyle = {
+  textAlign: 'left', 
+  color: 'rgba(0,0,0,.45)'
+}
 const getPieData = (originalData, fieldData) => {
   if(!originalData.length) return [];
   return fieldData.map((item, index) => {
@@ -40,25 +50,33 @@ const CardLoading = () => (
 )
 const mapStateToProps = ({ analysis, loading }) => ({
   ...analysis,
-  fetchPowering: loading.effects.analysis.fetchPowerAnalysis,
-  fetchWatering: loading.effects.analysis.fetchWaterAnalysis,
-  fetchContractCounting: loading.effects.analysis.fetchContractCountAnalysis,
-  fetchAreaing: loading.effects.analysis.fetchAreaAnalysis,
-  fetchRenting: loading.effects.analysis.fetchRentAnalysis
+  ...mapLoadingAndEffect([
+    'PowerAnalysis',
+    'WaterAnalysis',
+    'ContractCountAnalysis',
+    'AreaAnalysis',
+    'RentAnalysis',
+    'RoomAnalysis'
+  ], 'loading', loading, 'analysis')
 });
 const mapDispatchToProps = ({ analysis }) => ({
-  getPowerAnalysis: params => analysis.fetchPowerAnalysis(params),
-  getWaterAnalysis: params => analysis.fetchWaterAnalysis(params),
-  getContractCountAnalysis: () => analysis.fetchContractCountAnalysis(),
-  getAreaAnalysis: () => analysis.fetchAreaAnalysis(),
-  getRentAnalysis: params => analysis.fetchRentAnalysis(params)
+  ...mapLoadingAndEffect([
+    'PowerAnalysis',
+    'WaterAnalysis',
+    'ContractCountAnalysis',
+    'AreaAnalysis',
+    'RentAnalysis',
+    'RoomAnalysis'
+  ], 'effect', null, analysis)
 });
 
 @connect(mapStateToProps, mapDispatchToProps)
 class Analysis extends Component {
   state = {
     year: new Date().getFullYear(),
-    pieType: 'rent'
+    pieType: 'rent',
+    currentRoom: {},
+    drawerVisible: false
   }
   getEnergyAnalysis(year) {
     const { 
@@ -67,7 +85,6 @@ class Analysis extends Component {
     } = this.props
     getPowerAnalysis({year});
     getWaterAnalysis({year});
-    
   }
   componentDidMount() {
     const { year } = this.state;
@@ -76,7 +93,7 @@ class Analysis extends Component {
       getAreaAnalysis,
       getRentAnalysis
     } = this.props
-    this.getEnergyAnalysis(year)
+    this.getEnergyAnalysis(year);
     getContractCountAnalysis();
     getAreaAnalysis();
     ['OA','OB','WB'].forEach(code => {
@@ -89,6 +106,23 @@ class Analysis extends Component {
   }
   handlepieType = e => {
     this.setState({pieType: e.target.value});
+  }
+  handleRoomAnalysis = value => {
+    if(!value.length) return;
+    const floorId = value[value.length-1];
+    this.props.getRoomAnalysis({floorId});
+  }
+  handleRoomClick = index => {
+    if(index < 0) return;
+    const { roomList } = this.props;
+    const currentRoom = roomList[index];
+    this.handleDrawerShow(true);
+    this.setState({currentRoom})
+  }
+  handleDrawerShow = flag => {
+    this.setState({
+      drawerVisible: !!flag
+    });
   }
   renderSelectYear = () => (
     <Menu onClick={this.handleSelectYearChange}>
@@ -121,13 +155,26 @@ class Analysis extends Component {
       rentOA,
       rentOB,
       rentWB,
-      fetchPowering, 
-      fetchWatering, 
-      fetchContractCounting,
-      fetchAreaing,
-      fetchRenting
+      roomList,
+      fetchPowerAnalysising, 
+      fetchWaterAnalysising, 
+      fetchContractCountAnalysising,
+      fetchAreaAnalysising,
+      fetchRentAnalysising,
+      fetchRoomAnalysising
     } = this.props;
-    const { year, pieType } = this.state;
+    const { year, pieType, drawerVisible, currentRoom } = this.state;
+    const currentRooms = toPairs(currentRoom).map(item => [...item]);
+    currentRooms.push(['se', `${moment(currentRoom.startTime).format('YYYY-MM-DD')} ~ ${moment(currentRoom.endTime).format('YYYY-MM-DD')}`])
+    const fieldMap = {
+      'code': '合同编号',
+      'roomName': '房间号',
+      'companyName': '公司名称',
+      'rent': '租金',
+      'renter': '法人',
+      'tel': '联系电话',
+      'se': '合同起止日期'
+    }
     const pie = {
       rent: {
         name: '租金',
@@ -145,21 +192,21 @@ class Analysis extends Component {
         title: `用电量(${year}年)`,
         theme: 'powerCard',
         icon: PowerIcon,
-        loading: fetchPowering,
+        loading: fetchPowerAnalysising,
         data: power.reduce((item, prev) => item+prev, 0)
       },
       {
         title: `用水量(${year}年)`,
         theme: 'waterCard',
         icon: WaterIcon,
-        loading: fetchWatering,
+        loading: fetchWaterAnalysising,
         data: water.reduce((item, prev) => item+prev, 0)
       },
       {
         title: '合同数',
         theme: 'contractCard',
         icon: ContractIcon,
-        loading: fetchContractCounting,
+        loading: fetchContractCountAnalysising,
         data: contractCount
       }
     ];
@@ -176,9 +223,10 @@ class Analysis extends Component {
       <PageLayout
         extra={
           /* eslint-disable */
-          <Dropdown overlay={this.renderSelectYear()}>
+          /*<Dropdown overlay={this.renderSelectYear()}>
             <a href='javascript:;'>{year}年<Icon type='caret-down'/></a>
-          </Dropdown>
+          </Dropdown>*/
+          null
         }
       >
         <Row gutter={16}>
@@ -186,7 +234,8 @@ class Analysis extends Component {
             chartCardMap.map((item, index) => (
               <Col span={24/chartCardMap.length} key={index} className={[styles[item.theme], styles.baseCard].join(' ')} {...topColResponsiveProps}>
                 {
-                  !item.loading ? <ChartCard
+                  !item.loading ? 
+                  <ChartCard
                     title={item.title}
                     avatar={
                       <Icon component={item.icon}/>
@@ -196,7 +245,8 @@ class Analysis extends Component {
                     total={() => (
                       <span>{item.data}</span>
                     )}
-                  /> : <CardLoading/>
+                  /> : 
+                  <CardLoading/>
                 }
               </Col>
             ))
@@ -206,8 +256,7 @@ class Analysis extends Component {
           <Col {...topColResponsiveProps} xl={12} style={{marginBottom: 0}}>
             <Card
               title={`水电月用量(${year}年)`}
-              loading={fetchPowering && fetchWatering}
-              bodyStyle={{paddingLeft: 0, paddingRight: 12}}
+              loading={fetchPowerAnalysising && fetchWaterAnalysising}
               bordered={false}
             >
               <EnergyAnalysis height={360} data={data}/>
@@ -219,7 +268,7 @@ class Analysis extends Component {
               extra={this.renderPieCardExtra()}
               bordered={false}
               className={styles.proportion}
-              loading={fetchAreaing && fetchRenting}
+              loading={fetchAreaAnalysising && fetchRentAnalysising}
             >
               <h4>
                 <span>{pieName}</span>
@@ -242,29 +291,77 @@ class Analysis extends Component {
             </Card>
           </Col>
         </Row>
-        <Row gutter={16}>
-          <Col span={19}>
-            <Card
-              title='房间租用情况统计'
-              bordered={false}
-              extra={<FloorCascader placeholder='请选择楼层' onChange={value => console.log(value)}/>}
-            >
-              <RoomList data={[1,2,3,4,5,6,7,8]}/>   
-            </Card>  
-          </Col>
-          <Col span={5}>
-            <Card title='资源剩余' bordered={false} loading={fetchAreaing}>
-              <div style={{textAlign: 'center'}}>
-                <WaterWave
-                  title='未租面积剩余'
-                  height={161}
-                  percent={parseInt(area[1]/area[2]*100)}
-                />
+        
+        <Card
+          title='房间租用情况统计'
+          bordered={false}
+          extra={
+            <FloorCascader 
+              placeholder='请选择楼层' 
+              onChange={this.handleRoomAnalysis}
+              getInitValue={this.handleRoomAnalysis}
+              size='default'
+            />
+          }
+          bodyStyle={{padding: 0}}
+        >
+          <Row gutter={0}>
+            <Col span={4} style={{padding: 24, position: 'relative'}}>
+              <div style={{
+                textAlign: 'center'
+              }}>
+                {
+                  fetchAreaAnalysising ? 
+                  <Spin/> : 
+                  <WaterWave
+                    title='未租面积剩余'
+                    height={161}
+                    percent={parseInt(area[1]/area[2]*100)}
+                  />
+                } 
               </div>
-            </Card>
-          </Col>
-        </Row>         
-                    
+            </Col> 
+            <Col span={20} style={{padding: 24, borderLeft: '1px solid #e8e8e8', minHeight: 214}}>
+              {
+                fetchRoomAnalysising ? 
+                <Spin/> : 
+                <RoomList data={roomList} onGetCurrentRoom={this.handleRoomClick}/>
+              }
+            </Col>
+          </Row>  
+        </Card>        
+        <Drawer
+          title='房间租用信息'
+          placement='right'
+          width={360}
+          closable={false}
+          onClose={() => this.handleDrawerShow(false)}
+          visible={drawerVisible}
+        >
+          {
+            currentRooms.map((item, index) => {
+              const field = item[0];
+              const value = item[1];
+              return (
+                fieldMap[field] ? 
+                <Row gutter={16} style={{marginBottom: index !== currentRooms.length -1 && 16}} key={field}>
+                  <Col span={8} style={fieldStyle}>{fieldMap[field]}</Col>
+                  <Col span={16}>{
+                    field === 'rent' ? 
+                    <span
+                      dangerouslySetInnerHTML={{
+                        __html: yuan(currentRoom.rent)
+                      }}
+                    /> : 
+                    value
+                  }
+                  </Col>
+                </Row> : 
+                null
+              )
+            })
+          }
+        </Drawer>            
       </PageLayout>
     )
   }

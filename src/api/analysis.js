@@ -16,3 +16,6 @@ export async function queryAreaAnalysis() {
 export async function queryRentAnalysis(params) {
   return request(`/api/contract/rent?${stringify(params)}`)
 }
+export async function queryRoomAnalysis(params) {
+  return request(`/api/room/info?${stringify(params)}`);
+}

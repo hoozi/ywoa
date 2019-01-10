@@ -1,0 +1,59 @@
+.card {
+  cursor: pointer;
+  :global {
+    .ant-card-actions {
+      span {
+        cursor: pointer;
+      }
+    }
+  }
+}
+.newButton {
+  background-color: #fff;
+  border-color: #d9d9d9;
+  border-radius: 2px;
+  color: rgba(0,0,0,.45);
+  width: 100%;
+  height: 196px;
+}
+.descriptionItem {
+  line-height: 21px;
+  margin-bottom: 4px;
+}
+.descriptionLabel {
+  /* text-align: justify;
+  text-align-last: justify; */
+}
+.descriptionValue {
+  color: rgba(0,0,0,.65);
+}
+.cTime {
+  color: rgba(0,0,0,.4);
+  font-size: 14px;
+}
+.cardListForm {
+  //padding-top: 8px;
+  :global {
+    .ant-form-item {
+      margin-right: 0;
+      display: flex;
+      margin-bottom: 16px;
+      > .ant-form-item-label {
+        width: auto;
+        line-height: 32px;
+      }
+      .ant-form-item-control {
+        line-height: 32px;
+        height: 32px;
+      }
+    }
+    .ant-form-item-control-wrapper {
+      flex: 1;
+    }
+  }
+  .submitButtons {
+    white-space: nowrap;
+    margin-bottom: 16px;
+    display: inline-block;
+  }
+}

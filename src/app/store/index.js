@@ -6,6 +6,7 @@ import base from './models/base';
 import app from './models/app';
 import user from './models/user';
 import analysis from './models/analysis';
+import contract from './models/contract';
 
 const history = createHashHistory();
 
@@ -25,7 +26,8 @@ const store = init({
     base,
     app, 
     user,
-    analysis
+    analysis,
+    contract
   },
   redux,
   plugins: [loading]

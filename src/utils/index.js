@@ -86,3 +86,17 @@ export function getMenuMatchKeys (flatMenuKeys, paths) {
         flatMenuKeys.filter(item => pathToRegexp(item).test(path))
     )), []);
 }
+
+export function mapLoadingAndEffect (data, type, loading, effect) {
+  let obj = {};
+  data.forEach(item => {
+    obj[
+      type === 'loading' ? 
+      `fetch${item}ing` : 
+      `get${item}`
+    ] = type === 'loading' ? 
+    loading.effects[effect][`fetch${item}`] : 
+    params => effect[`fetch${item}`](params); 
+  });
+  return obj
+}

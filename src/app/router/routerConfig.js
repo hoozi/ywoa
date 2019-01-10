@@ -14,6 +14,7 @@ const LoadingComponent = (path) => {
 // pages
 const Login = LoadingComponent('User/Login');
 const Analysis = LoadingComponent('Analysis');
+const Contract = LoadingComponent('Contract');
 
 const authorizedRoutes = [
   {
@@ -22,6 +23,13 @@ const authorizedRoutes = [
     authorities: '1',
     unauthorized: Exception403,
     component: Analysis
+  },
+  {
+    path: '/business/contract',
+    exact: true,
+    authorities: '1',
+    unauthorized: Exception403,
+    component: Contract
   },
   {
     path: '/403',

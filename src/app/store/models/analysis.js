@@ -3,7 +3,8 @@ import {
   queryWaterAnalysis,
   queryContractCountAnalysis,
   queryAreaAnalysis,
-  queryRentAnalysis
+  queryRentAnalysis,
+  queryRoomAnalysis
 } from '@/api/analysis';
 import isNil from 'lodash/isNil';
 import values from 'lodash/values'
@@ -29,7 +30,8 @@ const state = {
   area: [],
   rentOA: 0,
   rentOB: 0,
-  rentOW: 0
+  rentOW: 0,
+  roomList: []
 };
 
 const reducers = {
@@ -72,6 +74,13 @@ const effects = {
     if(isNil(response) || response.code !== 1000) return;
     this.save({
       [`rent${code}`]: response.data
+    })
+  },
+  async fetchRoomAnalysis(payload) {
+    const response = await queryRoomAnalysis(payload);
+    if(isNil(response) || response.code !== 1000) return;
+    this.save({
+      roomList: response.data
     })
   }
 }

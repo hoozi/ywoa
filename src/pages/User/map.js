@@ -12,7 +12,7 @@ export default [
       prefix: <Icon type='user' theme='outlined' style={{ color: 'rgba(0,0,0,.25)' }}/>
     },
     options: {
-      initialValue: 'admin',
+      initialValue: '',
       rules: [
         { required: true, message: '请输入用户名' }
       ]
@@ -27,7 +27,7 @@ export default [
       prefix: <Icon type='lock' theme='outlined' style={{ color: 'rgba(0,0,0,.25)' }}/>
     },
     options: {
-      initialValue: '123456',
+      initialValue: '',
       rules: [
         { required: true, message: '请输入密码' }
       ]
