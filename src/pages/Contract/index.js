@@ -1,76 +1,50 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { 
-  List, 
   Button, 
-  Icon, 
-  Card, 
   Row, 
   Col, 
-  Tag, 
   Drawer, 
   Radio, 
   Form, 
   Input,
   Select,
   Alert,
+  Tag,
   DatePicker 
 } from 'antd'
 import { connect } from 'react-redux';
-import { Ellipsis, Charts } from 'ant-design-pro';
+import {  Charts } from 'ant-design-pro';
+import moment from 'moment';
 import PageLayout from '@/layouts/PageLayout';
 import styles from './index.less';
-import map from 'lodash/map';
 import isFunction from 'lodash/isFunction';
 import { mapLoadingAndEffect } from '@/utils';
 import searchFormMap from './searchFormMap';
+import ContractList from './ContractList';
 
-const Meta = Card.Meta;
 const RadioButton = Radio.Button;
 const RadioGroup = Radio.Group;
 const FormItem = Form.Item;
 const RangePicker = DatePicker.RangePicker;
 const Option = Select.Option;
 
-const feildMap = {
-  'companyName': '公司',
-  'renter': '法人',
-  'tel': '电话'
+const formItemLayout = {
+  labelCol: { span: 5, offset: 0},
+  wrapperCol: { span: 19 }
+};
+const textFormProps = {
+  colon: false,
+  ...formItemLayout
 }
-const payStatus = [
-  {
-    color: 'red',
-    text: '租金未支付'
-  },
-  {
-    color: 'green',
-    text: '租金已支付'
+const getTagByStatus = (status, type) => {
+  const statusColor = ['red', 'green'];
+  const map = {
+    chargeFlag: ['租金未支付', '租金已支付'],
+    valid: ['合同已过期', '有效合同'],
+    nflag: ['企业未入驻', '企业已入驻']
   }
-]
-const getColor = item => {
-  const { valid, isOut } = item;
-  if(valid) {
-    if(isOut) {
-      return '#faad14';
-    } else {
-      return '#65b157';
-    }
-  } else {
-    return '#c2c5d4';
-  }
+  return <Tag color={statusColor[status]}>{map[type][status]}</Tag>;
 }
-const codeContent = item => (
-  <div style={{
-    display: 'flex',
-    justifyContent: 'space-between'
-  }}>
-    <span>编号{item.code}</span>
-    {
-      !item.valid ?
-      <Tag style={{margin: 0}}>合同已到期</Tag> :
-      <Tag style={{margin: 0}} color={payStatus[item.chargeFlag].color}>{payStatus[item.chargeFlag].text}</Tag>
-    }
-  </div>
-);
 const mapStateToProps = ({ contract, base, loading }) => ({
   ...contract,
   ...base,
@@ -88,11 +62,12 @@ const mapDispatchToProps = ({ contract, base }) => ({
 })
 @Form.create()
 @connect(mapStateToProps, mapDispatchToProps)
-class Contract extends Component {
+class Contract extends PureComponent {
   state = {
     drawerVisible: false,
     areaId: '11',
-    searchValues: {}
+    searchValues: {},
+    currentData: {}
   }
   getContractData(params) {
     const { getContract } = this.props;
@@ -103,9 +78,25 @@ class Contract extends Component {
     const { getFloorsByArea } = this.props;
     getFloorsByArea(id)
   }
+  resetFields() {
+    const { form } = this.props;
+    form.resetFields();
+    this.setState({
+      searchValues: {}
+    });
+  }
   componentDidMount() {
+    this.setState({
+      initForm: true
+    })
     this.getContractData();
     this.getFloorsByAreaData(this.state.areaId);
+  }
+  handleShowContractInfo = currentData => {
+    this.handleDrawerShow(true);
+    this.setState({
+      currentData
+    })
   }
   handleDrawerShow = flag => {
     this.setState({
@@ -114,7 +105,8 @@ class Contract extends Component {
   }
   handleAreaChange = areaId => {
     this.setState({ areaId });
-    this.handleSearchReset();
+    this.resetFields();
+    this.getContractData({ areaId, current: 1 });
   }
   handleSelectChange = (name, value) => {
     const { searchValues } = this.state
@@ -147,12 +139,16 @@ class Contract extends Component {
     })
   }
   handleSearchReset = () => {
-    const { form } = this.props;
-    form.resetFields();
+    this.resetFields();
+    this.getContractData({current: 1});
+  }
+  handlePaginationChange = current => {
+    const { searchValues } = this.state;
+    const mergeSearchValues = { ...searchValues, current }
     this.setState({
-      searchValues: {}
-    });
-    this.getContractData();
+      searchValues: mergeSearchValues
+    })
+    this.getContractData(mergeSearchValues)
   }
   renderSearchFormItem(options) {
     const { form: { getFieldDecorator } } = this.props;
@@ -179,30 +175,20 @@ class Contract extends Component {
       )
     })
   }
-  renderDescription = data => map(data, (value, key)=> {
-    return (
-      feildMap[key] ? 
-      <Row className={styles.descriptionItem} gutter={4} key={key}>
-        <Col className={styles.descriptionLabel} span={3}>{feildMap[key]}</Col>
-        <Col className={styles.descriptionValue} span={21}><Ellipsis lines={1}>{value}</Ellipsis></Col>
-      </Row> : 
-      null
-    )
-  })
   renderSearchForm = () =>{ 
-    const { floors } = this.props
+    const { floors } = this.props;
     return (
       <Form layout='inline' className={styles.cardListForm} onSubmit={this.handleContractSearch}>
         <Row gutter={{ md: 8, lg: 24, xl: 48 }}>
           {this.renderSearchFormItem({
-            fmin: floors.map(item =>({ label: item.name, value: item.id }))
+            fmin: floors.map(item=>({label: item.name, value: item.id}))
           })}
           <Col md={8} sm={24}>
             <span className={styles.submitButtons}>
               <Button type='primary' htmlType='submit' onClick={this.handleContractSearch}>
                 查询
               </Button>
-              <Button style={{ marginLeft: 8 }} >
+              <Button style={{ marginLeft: 8 }} onClick={this.handleSearchReset}>
                 重置
               </Button>
               <Button style={{ marginLeft: 8 }} >
@@ -215,11 +201,14 @@ class Contract extends Component {
     )
   }
   render(){
-    const { drawerVisible, areaId } = this.state;
+    const { drawerVisible, areaId, initForm, currentData } = this.state;
     const { data: { records, total, current, size: pageSize }, fetchContracting } = this.props;
     const paginationProps = {
+      onChange: this.handlePaginationChange,
       total,
       current,
+      size: 'small',
+      showQuickJumper: true,
       pageSize: pageSize+1
     }
     return (
@@ -237,51 +226,38 @@ class Contract extends Component {
       >
         <Alert message={
           <span>
-            本页共有 <b>{records.filter(item=>item.valid).length}</b> 份合同,租金共有 <b dangerouslySetInnerHTML={{__html: Charts.yuan(records.reduce((pre, cur)=>pre+cur.rent,0))}}></b> 元
+            本页共 <b>{records.length}</b> 份合同 (<b>{records.filter(item=>!item.valid).length}</b> 份已经过期),租金共 <b dangerouslySetInnerHTML={{__html: Charts.yuan(records.reduce((pre, cur)=>pre+cur.rent,0))}}></b>元 (已支付的租金共 <b dangerouslySetInnerHTML={{__html: Charts.yuan(records.filter(item=>item.chargeFlag).reduce((pre, cur)=>pre+cur.rent,0))}}></b>元)
           </span>
         } type='info' showIcon style={{marginBottom: 16}}/>
-        <List
-          grid={{ gutter: 16, lg: 3, md: 2, sm: 1, xs: 1 }}
-          dataSource={['', ...records]}
+        <ContractList
           loading={fetchContracting}
+          data={records}
           pagination={paginationProps}
-          renderItem={item => (
-            item ? 
-            <List.Item>
-              <Card 
-                hoverable
-                className={styles.card} 
-                style={{borderLeft: `2px solid ${getColor(item)}`}}
-                bodyStyle={{padding: '24px 16px'}}
-                actions={[
-                  <span><Icon type='setting' /> 管理</span>, 
-                  <span><Icon type='edit' /> 续租</span>, 
-                  <span><Icon type='delete' /> 退租</span>
-                ]}
-                onClick={() => this.handleDrawerShow(true)}
-              >
-                <Meta
-                  title={codeContent(item)}
-                  description={this.renderDescription(item)}
-                />
-              </Card>
-            </List.Item> :
-            <List.Item>
-              <Button type='dashed' className={styles.newButton}>
-                <Icon type='plus'/> 添加合同
-              </Button>
-            </List.Item>
-          )}
+          onShowInfo={this.handleShowContractInfo}
         />
         <Drawer
-          title='合同信息'
           placement='right'
-          width={480}
+          width={380}
           closable={false}
           onClose={() => this.handleDrawerShow(false)}
           visible={drawerVisible}
         >
-          <p>1</p>
+          <Form className={styles.drawerTextForm}>
+            <FormItem label='合同编号' {...textFormProps}><b>{currentData.code}</b></FormItem>
+            <FormItem label='公司名称' {...textFormProps}>{currentData.companyName}</FormItem>
+            <FormItem label='法人' {...textFormProps}>{currentData.renter}</FormItem>
+            <FormItem label='联系电话' {...textFormProps}>{currentData.tel}</FormItem>
+            <FormItem label='房间号' {...textFormProps}>{currentData.roomsName}</FormItem>
+            <FormItem label='租金' {...textFormProps}><span style={{color: '#d48806'}} dangerouslySetInnerHTML={{__html: Charts.yuan(currentData.rent)}}></span></FormItem>
+            <FormItem label='押金' {...textFormProps}><span style={{color: '#d48806'}} dangerouslySetInnerHTML={{__html: Charts.yuan(currentData.deposit)}}></span></FormItem>
+            <FormItem label='合同期限' {...textFormProps}>{moment(currentData.startTime).format('YYYY-MM-DD')} 至 {moment(currentData.endTime).format('YYYY-MM-DD')}</FormItem>
+            <FormItem label='备注' {...textFormProps}>{currentData.remark || '-'}</FormItem>
+            <FormItem label='状态' {...textFormProps}>
+              {getTagByStatus(currentData.valid, 'valid')}
+              {getTagByStatus(currentData.chargeFlag, 'chargeFlag')}
+              {getTagByStatus(currentData.nflag, 'nflag')}
+            </FormItem>
+          </Form>
         </Drawer>
       </PageLayout>
     )

@@ -1,4 +1,5 @@
 import pathToRegexp from 'path-to-regexp';
+import store from '@/app/store';
 
 /**
  * @param {Array} menus 嵌套的菜单数组
@@ -96,7 +97,25 @@ export function mapLoadingAndEffect (data, type, loading, effect) {
       `get${item}`
     ] = type === 'loading' ? 
     loading.effects[effect][`fetch${item}`] : 
-    params => effect[`fetch${item}`](params); 
+    (params, meta) => effect[`fetch${item}`](params, meta); 
   });
   return obj
+}
+
+export function mapStates(modelName, states) {
+  let ret = {};
+  const stateObj = store.getState()[modelName];
+  states.forEach(item => {
+    ret[item] = stateObj[item];
+  });
+  return ret;
+}
+
+export function mapActions(modelName, actions, dispatch) {
+  const _actions = dispatch[modelName];
+  let ret = {};
+  actions.forEach(item => {
+    ret[item] = (params, meta) => _actions[item](params, meta);
+  });
+  return ret;
 }

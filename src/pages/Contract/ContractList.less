@@ -1,0 +1,50 @@
+@import '~antd/lib/style/themes/default.less';
+
+.card {
+  cursor: pointer;
+  :global {
+    .ant-card-actions {
+      background: #f7f9fa;
+      span {
+        cursor: pointer;
+      }
+    }
+    .ant-card-meta-title {
+      margin-bottom: 12px;
+      & > div a {
+        color: @heading-color;
+        display: inline-block;
+        max-width: 100%;
+      }
+    }
+    .ant-card-body:hover {
+      .ant-card-meta-title > div a {
+        color: @primary-color;
+      }
+    }
+  }
+}
+
+.newButton {
+  background-color: #fff;
+  border-color: #d9d9d9;
+  border-radius: 2px;
+  color: rgba(0,0,0,.45);
+  width: 100%;
+  height: 196px;
+}
+.descriptionItem {
+  line-height: 21px;
+  margin-bottom: 4px;
+}
+.descriptionLabel {
+  /* text-align: justify;
+  text-align-last: justify; */
+}
+.descriptionValue {
+  color: rgba(0,0,0,.65);
+}
+.cTime {
+  color: rgba(0,0,0,.4);
+  font-size: 14px;
+}
