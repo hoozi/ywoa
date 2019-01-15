@@ -12,7 +12,7 @@ import map from 'lodash/map';
 import { Ellipsis } from 'ant-design-pro';
 import styles from './ContractList.less';
 
-const feildMap = {
+const fieldMap = {
   'companyName': '公司',
   'renter': '法人',
   'tel': '电话'
@@ -40,7 +40,7 @@ const getColor = item => {
     return '#c2c5d4';
   }
 }
-const codeContent = item => (
+const codeContent = item  => (
   <div style={{
     display: 'flex',
     justifyContent: 'space-between'
@@ -56,11 +56,11 @@ const codeContent = item => (
 
 const getDescription = data => map(data, (value, key)=> {
   return (
-    feildMap[key] ? 
-    <Row className={styles.descriptionItem} gutter={4} key={key}>
-      <Col className={styles.descriptionLabel} span={3}>{feildMap[key]}</Col>
-      <Col className={styles.descriptionValue} span={21}><Ellipsis lines={1}>{value}</Ellipsis></Col>
-    </Row> : 
+    fieldMap[key] ? 
+    <div className={styles.descriptionItem} key={key}>
+      <span className={styles.descriptionLabel}>{fieldMap[key]}</span>
+      <span className={styles.descriptionValue}><Ellipsis lines={1}>{value}</Ellipsis></span>
+    </div> : 
     null
   )
 })
@@ -70,7 +70,7 @@ export default class ContractList extends Component {
     return nextProps.loading != this.props.loading
   }
   render() {
-    const { data, loading, pagination={}, onShowInfo, onEdit, onContinue, onThrow, ...restProps } = this.props
+    const { data, loading, pagination={}, onShowInfo, onEdit, onContinue, onThrow, onAddData, ...restProps } = this.props
     return (
       <List
         rowKey='id'
@@ -92,16 +92,15 @@ export default class ContractList extends Component {
                   e.stopPropagation();
                   onEdit && onEdit(item);
                 } }><Icon type='setting' /> 管理</span>, 
-                <span onClick={e => {
+                /* <span onClick={e => {
                   e.stopPropagation();
                   onContinue && onContinue(item);
-                }}><Icon type='edit' /> 续租</span>, 
+                }}><Icon type='edit' /> 续租</span>, */
                 <span onClick={e => {
                   e.stopPropagation();
-                  onThrow() && onThrow(item);
+                  onThrow && onThrow(item);
                 }}><Icon type='delete' /> 退租</span>
               ]}
-              onClick={() => onShowInfo && onShowInfo(item)}
             >
               <Card.Meta
                 title={codeContent(item)}
@@ -110,7 +109,7 @@ export default class ContractList extends Component {
             </Card>
           </List.Item> :
           <List.Item key={item.id}>
-            <Button type='dashed' className={styles.newButton}>
+            <Button type='dashed' className={styles.newButton} onClick={() => onAddData && onAddData()}>
               <Icon type='plus'/> 添加合同
             </Button>
           </List.Item>

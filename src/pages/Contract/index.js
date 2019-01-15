@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { PureComponent, Fragment } from 'react';
 import { 
   Button, 
   Row, 
@@ -7,14 +7,20 @@ import {
   Radio, 
   Form, 
   Input,
+  Icon,
   Select,
   Alert,
   Tag,
-  DatePicker 
-} from 'antd'
+  Modal,
+  InputNumber,
+  DatePicker,
+  Switch
+} from 'antd';
 import { connect } from 'react-redux';
 import {  Charts } from 'ant-design-pro';
 import moment from 'moment';
+import isEmpty from 'lodash/isEmpty';
+import isNil from 'lodash/isNil';
 import PageLayout from '@/layouts/PageLayout';
 import styles from './index.less';
 import isFunction from 'lodash/isFunction';
@@ -40,11 +46,151 @@ const getTagByStatus = (status, type) => {
   const statusColor = ['red', 'green'];
   const map = {
     chargeFlag: ['租金未支付', '租金已支付'],
-    valid: ['合同已过期', '有效合同'],
+    valid: ['合同已到期', '有效合同'],
     nflag: ['企业未入驻', '企业已入驻']
   }
   return <Tag color={statusColor[status]}>{map[type][status]}</Tag>;
 }
+const CreateModal = Form.create()(props => {
+  const { form, handleSave, currentData, handleModalVisible, modalVisible } = props;
+  const getFieldDecorator = form.getFieldDecorator;
+  const handleOk = () => {
+    form.validateFields((err, values) => {
+      if(err) return;
+      handleSave && handleSave(values)
+    })
+  }
+  console.log(!!currentData.valid,!!currentData.chargeFlag,!!currentData.nflag)
+  return (
+    <Modal
+      title={isEmpty(currentData) ? '新增合同' : '管理合同'}
+      visible={modalVisible}
+      onCancel={() => handleModalVisible()}
+      onOk={handleOk}
+      destroyOnClose
+    >
+      <Form className={styles.modalForm}>
+        <FormItem label='公司名称' {...formItemLayout}>
+          {
+            getFieldDecorator('companyName', {
+              rules: [
+                {
+                  required: true,
+                  message: '请输入公司名称！'
+                }
+              ],
+              initialValue: currentData.companyName
+            })(
+              <Input placeholder='请输入'/>
+            )
+          }
+        </FormItem>
+        <FormItem label='法人' {...formItemLayout}>
+          {
+            getFieldDecorator('renter', {
+              rules: [
+                {
+                  required: true,
+                  message: '请输入法人！'
+                }
+              ],
+              initialValue: currentData.renter
+            })(
+              <Input placeholder='请输入'/>
+            )
+          }
+        </FormItem>
+        <FormItem label='联系电话' {...formItemLayout}>
+          {
+            getFieldDecorator('tel', {
+              rules: [
+                {
+                  required: true,
+                  message: '请输入联系电话！'
+                }
+              ],
+              initialValue: currentData.tel
+            })(
+              <Input placeholder='请输入'/>
+            )
+          }
+        </FormItem>
+        <FormItem label='房间号' {...formItemLayout}>
+          
+        </FormItem>
+        <FormItem label='租金' {...formItemLayout}>
+          {
+            getFieldDecorator('rent', {
+              rules: [
+                {
+                  required: true,
+                  message: '请输入租金！'
+                }
+              ],
+              initialValue: currentData.rent
+            })(
+              <InputNumber placeholder='请输入' style={{width: '100%'}}/>
+            )
+          }
+        </FormItem>
+        <FormItem label='押金' {...formItemLayout}>
+          {
+            getFieldDecorator('deposit', {
+              rules: [
+                {
+                  required: true,
+                  message: '请输入押金！'
+                }
+              ],
+              initialValue: currentData.deposit
+            })(
+              <InputNumber placeholder='请输入' style={{width: '100%'}}/>
+            )
+          }
+        </FormItem>
+        <FormItem label='合同期限' {...formItemLayout}>
+          {
+            getFieldDecorator('rangeData', {
+              rules: [
+                {
+                  required: true,
+                  message: '请选择合同期限'
+                }
+              ],
+              initialValue: isEmpty(currentData) ? [] : [moment(currentData.startTime), moment(currentData.endTime)]
+            })(
+              <RangePicker placeholder={['开始日期', '结束日期']} style={{width: '100%'}}/>
+            )
+          }
+        </FormItem>
+        <FormItem label='备注' {...formItemLayout}>
+          {
+            getFieldDecorator('remark')(
+              <Input.TextArea placeholder='请输入' rows={4}/>
+            )
+          }
+        </FormItem>
+        <FormItem label='状态' {...formItemLayout} className={styles.itemSmall}>
+          {
+            getFieldDecorator('valid')(
+              <Switch checkedChildren='合同有效' unCheckedChildren='合同无效' defaultChecked={!!currentData.valid} />
+            )
+          }
+          {
+            getFieldDecorator('chargeFlag')(
+              <Switch checkedChildren='租金已支付' unCheckedChildren='租金未支付' defaultChecked={!!currentData.chargeFlag} style={{marginLeft: 8}}/>
+            )
+          }
+          {
+            getFieldDecorator('nflag')(
+              <Switch checkedChildren='企业已入驻' unCheckedChildren='企业未入驻' defaultChecked={!!currentData.nflag} style={{marginLeft: 8}}/>
+            )
+          }
+        </FormItem>
+      </Form>
+    </Modal>
+  )
+})
 const mapStateToProps = ({ contract, base, loading }) => ({
   ...contract,
   ...base,
@@ -59,13 +205,14 @@ const mapDispatchToProps = ({ contract, base }) => ({
   ...mapLoadingAndEffect([
     'FloorsByArea'
   ], 'effect', null, base)
-})
+});
 @Form.create()
 @connect(mapStateToProps, mapDispatchToProps)
 class Contract extends PureComponent {
   state = {
     drawerVisible: false,
     areaId: '11',
+    modalVisible: false,
     searchValues: {},
     currentData: {}
   }
@@ -150,6 +297,12 @@ class Contract extends PureComponent {
     })
     this.getContractData(mergeSearchValues)
   }
+  handleModalVisible = (flag, cur) => {
+    this.setState({
+      modalVisible: !!flag,
+      currentData: isNil(cur) ? {} : cur
+    })
+  }
   renderSearchFormItem(options) {
     const { form: { getFieldDecorator } } = this.props;
     return searchFormMap.map(item => {
@@ -201,7 +354,7 @@ class Contract extends PureComponent {
     )
   }
   render(){
-    const { drawerVisible, areaId, initForm, currentData } = this.state;
+    const { drawerVisible, areaId, currentData, modalVisible } = this.state;
     const { data: { records, total, current, size: pageSize }, fetchContracting } = this.props;
     const paginationProps = {
       onChange: this.handlePaginationChange,
@@ -210,6 +363,46 @@ class Contract extends PureComponent {
       size: 'small',
       showQuickJumper: true,
       pageSize: pageSize+1
+    }
+    const parentMethods = {
+      handleSave: this.handleSave,
+      handleModalVisible: this.handleModalVisible
+    }
+    const getFormItemByAreaId = currentData => {
+      const areaMap = ['仓库', '写字楼'];
+      const fieldMap = {
+        'roomsName': <FormItem label='房间号' {...textFormProps}>{currentData.roomsName}</FormItem>,
+        'size': <FormItem label='总面积' {...textFormProps}>{currentData.roomsSize}㎡</FormItem>,
+        'position': <FormItem label='位置' {...textFormProps}>{currentData.position}</FormItem>,
+        'roomNum': <FormItem label='租房数量' {...textFormProps}>{currentData.roomNum}间</FormItem>
+      }
+      const formItemMap = {
+        '11': <Fragment>
+                {fieldMap['roomsName']}
+                {fieldMap['roomNum']}
+              </Fragment>,
+        '13': <Fragment>
+                {fieldMap['roomsName']}
+                {fieldMap['roomNum']}
+              </Fragment>,
+        '10': <Fragment>
+                {fieldMap['roomsName']}
+                {fieldMap['roomNum']}
+                {fieldMap['size']}
+              </Fragment>,
+        '12': <Fragment>
+                {fieldMap['position']}
+                {fieldMap['roomNum']}
+                <FormItem label='所属区块' {...textFormProps}>{areaMap[currentData.contractType]}</FormItem>
+                {fieldMap['size']}
+              </Fragment>,
+        '14': <Fragment>
+                {fieldMap['position']}
+                {fieldMap['roomNum']}
+                {fieldMap['size']}
+              </Fragment>
+      }
+      return formItemMap[areaId];
     }
     return (
       <PageLayout
@@ -225,17 +418,20 @@ class Contract extends PureComponent {
         }
       >
         <Alert message={
-          <span>
-            本页共 <b>{records.length}</b> 份合同 (<b>{records.filter(item=>!item.valid).length}</b> 份已经过期),租金共 <b dangerouslySetInnerHTML={{__html: Charts.yuan(records.reduce((pre, cur)=>pre+cur.rent,0))}}></b>元 (已支付的租金共 <b dangerouslySetInnerHTML={{__html: Charts.yuan(records.filter(item=>item.chargeFlag).reduce((pre, cur)=>pre+cur.rent,0))}}></b>元)
-          </span>
+          <div>
+            <span style={{paddingRight: 16}}>本页总计 <b>{records.length}</b> 份合同 (<b>{records.filter(item=>!item.valid).length}</b> 份已经过期)</span><span>租金总计 <b dangerouslySetInnerHTML={{__html: Charts.yuan(records.reduce((pre, cur)=>pre+cur.rent,0))}}></b>元 (已支付的租金共 <b dangerouslySetInnerHTML={{__html: Charts.yuan(records.filter(item=>item.chargeFlag).reduce((pre, cur)=>pre+cur.rent,0))}}></b>元)</span>
+          </div>
         } type='info' showIcon style={{marginBottom: 16}}/>
         <ContractList
           loading={fetchContracting}
           data={records}
           pagination={paginationProps}
           onShowInfo={this.handleShowContractInfo}
+          onAddData={() => this.handleModalVisible(true)}
+          onEdit={(current) => this.handleModalVisible(true, current)}
         />
         <Drawer
+          title='合同信息'
           placement='right'
           width={380}
           closable={false}
@@ -243,11 +439,11 @@ class Contract extends PureComponent {
           visible={drawerVisible}
         >
           <Form className={styles.drawerTextForm}>
-            <FormItem label='合同编号' {...textFormProps}><b>{currentData.code}</b></FormItem>
+            <FormItem label='合同编号' {...textFormProps}>{currentData.code}</FormItem>
             <FormItem label='公司名称' {...textFormProps}>{currentData.companyName}</FormItem>
             <FormItem label='法人' {...textFormProps}>{currentData.renter}</FormItem>
             <FormItem label='联系电话' {...textFormProps}>{currentData.tel}</FormItem>
-            <FormItem label='房间号' {...textFormProps}>{currentData.roomsName}</FormItem>
+            {getFormItemByAreaId(currentData)}
             <FormItem label='租金' {...textFormProps}><span style={{color: '#d48806'}} dangerouslySetInnerHTML={{__html: Charts.yuan(currentData.rent)}}></span></FormItem>
             <FormItem label='押金' {...textFormProps}><span style={{color: '#d48806'}} dangerouslySetInnerHTML={{__html: Charts.yuan(currentData.deposit)}}></span></FormItem>
             <FormItem label='合同期限' {...textFormProps}>{moment(currentData.startTime).format('YYYY-MM-DD')} 至 {moment(currentData.endTime).format('YYYY-MM-DD')}</FormItem>
@@ -255,10 +451,22 @@ class Contract extends PureComponent {
             <FormItem label='状态' {...textFormProps}>
               {getTagByStatus(currentData.valid, 'valid')}
               {getTagByStatus(currentData.chargeFlag, 'chargeFlag')}
-              {getTagByStatus(currentData.nflag, 'nflag')}
             </FormItem>
           </Form>
+          <div className={styles.bottomButtons}>
+            <Button type='primary' style={{ marginRight: 8 }}>
+              <Icon type='edit'/> 管理
+            </Button>
+            <Button type='danger'>
+              <Icon type='delete'/> 退租
+            </Button>
+          </div>
         </Drawer>
+        <CreateModal
+          {...parentMethods}
+          currentData={currentData}
+          modalVisible={modalVisible}
+        />
       </PageLayout>
     )
   }

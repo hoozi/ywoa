@@ -191,21 +191,21 @@ class Analysis extends Component {
       {
         title: `用电量(${year}年)`,
         theme: 'powerCard',
-        icon: PowerIcon,
+        //icon: PowerIcon,
         loading: fetchPowerAnalysising,
         data: power.reduce((item, prev) => item+prev, 0)
       },
       {
         title: `用水量(${year}年)`,
         theme: 'waterCard',
-        icon: WaterIcon,
+        //icon: WaterIcon,
         loading: fetchWaterAnalysising,
         data: water.reduce((item, prev) => item+prev, 0)
       },
       {
         title: '合同数',
         theme: 'contractCard',
-        icon: ContractIcon,
+       //icon: ContractIcon,
         loading: fetchContractCountAnalysising,
         data: contractCount
       }
@@ -238,7 +238,7 @@ class Analysis extends Component {
                   <ChartCard
                     title={item.title}
                     avatar={
-                      <Icon component={item.icon}/>
+                      item.icon && <Icon component={item.icon}/>
                     }
                     bordered={false}
                     bodyStyle={{padding: '4px 0 0 24px'}}

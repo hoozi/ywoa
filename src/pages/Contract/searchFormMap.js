@@ -36,7 +36,7 @@ export default [
       placeholder: '请输入'
     }
   },
-  {
+  /* {
     name: 'nflag',
     label: '入驻状态',
     type: 'select',
@@ -71,7 +71,7 @@ export default [
         value: 0
       }
     ]
-  },
+  }, */
   {
     name: 'valid',
     label: '合同状态',

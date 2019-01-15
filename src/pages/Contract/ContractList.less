@@ -1,7 +1,7 @@
 @import '~antd/lib/style/themes/default.less';
 
 .card {
-  cursor: pointer;
+  //cursor: pointer;
   :global {
     .ant-card-actions {
       background: #f7f9fa;
@@ -36,12 +36,25 @@
 .descriptionItem {
   line-height: 21px;
   margin-bottom: 4px;
+  width: 100%;
+  &:after {
+    clear:both;
+    content:'.';
+    display:block;
+    width: 0;
+    height: 0;
+    visibility:hidden;
+  }
 }
 .descriptionLabel {
   /* text-align: justify;
   text-align-last: justify; */
+  float: left;
+  margin-right: 8px;
+  color: rgba(0,0,0,.85);
 }
 .descriptionValue {
+  float: left;
   color: rgba(0,0,0,.65);
 }
 .cTime {
